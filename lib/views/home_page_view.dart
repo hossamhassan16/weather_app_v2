@@ -10,6 +10,7 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
+  // ignore: unused_field
   int _page = 0;
   GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   @override
@@ -69,27 +70,27 @@ class _HomePageViewState extends State<HomePageView> {
         index: 0,
         items: <Widget>[
           Icon(
+            Icons.home,
+            size: 30,
+            color: Color(0xff48319D),
+          ),
+          Icon(
+            Icons.cloud,
+            size: 30,
+            color: Color(0xff48319D),
+          ),
+          Icon(
             Icons.add,
             size: 30,
             color: Color(0xff48319D),
           ),
           Icon(
+            Icons.settings,
+            size: 30,
+            color: Color(0xff48319D),
+          ),
+          Icon(
             Icons.list,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
-          Icon(
-            Icons.compare_arrows,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
-          Icon(
-            Icons.call_split,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
-          Icon(
-            Icons.perm_identity,
             size: 30,
             color: Color(0xff48319D),
           ),
