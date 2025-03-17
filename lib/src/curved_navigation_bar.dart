@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:weather_app_v2/src/nav_custom_clipper.dart';
-import 'src/nav_button.dart';
-import 'src/nav_custom_painter.dart';
+import 'nav_button.dart';
+import 'nav_custom_painter.dart';
 
 typedef _LetIndexPage = bool Function(int value);
 
