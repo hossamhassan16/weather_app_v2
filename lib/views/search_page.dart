@@ -1,32 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app_v2/cubits/cubit/weather_cubit.dart';
 
 class SearchPage extends StatefulWidget {
+  final Function(int) onTabChange; // Callback to switch tabs
+
+  const SearchPage({super.key, required this.onTabChange});
+
   @override
-  _SearchPage createState() => _SearchPage();
+  _SearchPageState createState() => _SearchPageState();
 }
 
-class _SearchPage extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> {
   TextEditingController _searchController = TextEditingController();
   List<String> _recentSearches = ["Cairo", "London", "New York", "Paris"];
 
-  void _onSearch() {
-    String searchText = _searchController.text.trim();
-    if (searchText.isNotEmpty && !_recentSearches.contains(searchText)) {
+  void _onSearch(String cityName) {
+    if (cityName.isNotEmpty) {
+      BlocProvider.of<WeatherCubit>(context).getWeather(cityName: cityName);
+      BlocProvider.of<WeatherCubit>(context).cityName = cityName;
+
       setState(() {
-        _recentSearches.insert(0, searchText);
-        if (_recentSearches.length > 5) _recentSearches.removeLast();
+        // Add the search term to recent searches and ensure max 5 items
+        if (!_recentSearches.contains(cityName)) {
+          _recentSearches.insert(0, cityName);
+          if (_recentSearches.length > 5) _recentSearches.removeLast();
+        }
+        _searchController.clear(); // Clear the search bar after search
       });
+
+      widget.onTabChange(0); // Navigate to Home tab
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff1F1D47),
+      backgroundColor: const Color(0xff1F1D47),
       appBar: AppBar(
-        title: Text("Search City"),
+        title: const Text("Search City"),
         centerTitle: true,
-        backgroundColor: Color(0xff1F1D47),
+        backgroundColor: const Color(0xff1F1D47),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -35,32 +49,37 @@ class _SearchPage extends State<SearchPage> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                label: Text(
-                  "Search",
-                ),
+                labelText: "Search",
                 hintText: "Enter city name...",
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Color(0xff48319D),
+                prefixIcon: GestureDetector(
+                  onTap: () {
+                    if (_searchController.text.trim().isNotEmpty) {
+                      _onSearch(_searchController.text.trim());
+                    }
+                  },
+                  child: const Icon(Icons.search, color: Color(0xff48319D)),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onSubmitted: (value) => _onSearch(),
+              onSubmitted: (cityName) {
+                if (cityName.trim().isNotEmpty) {
+                  _onSearch(cityName.trim());
+                }
+              },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: _recentSearches.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading:
-                        Icon(Icons.location_city, color: Color(0xff48319D)),
+                    leading: const Icon(Icons.location_city,
+                        color: Color(0xff48319D)),
                     title: Text(_recentSearches[index]),
                     onTap: () {
-                      _searchController.text = _recentSearches[index];
-                      _onSearch();
+                      _onSearch(_recentSearches[index]);
                     },
                   );
                 },

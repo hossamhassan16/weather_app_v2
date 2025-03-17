@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weather_app_v2/core/utils/styles.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app_v2/cubits/cubit/weather_cubit.dart';
+import 'package:weather_app_v2/models/weather_model.dart';
 import 'package:weather_app_v2/src/curved_navigation_bar.dart';
+import 'package:weather_app_v2/views/default_body.dart';
 import 'package:weather_app_v2/views/forecast_page.dart';
 import 'package:weather_app_v2/views/search_page.dart';
+import 'package:weather_app_v2/views/success_body.dart';
 
 class HomePageView extends StatefulWidget {
   const HomePageView({super.key});
@@ -12,14 +16,21 @@ class HomePageView extends StatefulWidget {
 }
 
 class _HomePageViewState extends State<HomePageView> {
-  // ignore: unused_field
-  int _page = 0;
+  int _page = 0; // Current tab index
   GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
-  final List<Widget> _screens = [
+
+  void _changeTab(int index) {
+    setState(() {
+      _page = index;
+    });
+  }
+
+  late final List<Widget> _screens = [
     HomeScreen(), // Home Page
     ForecastPage(), // Weather Forecast
-    SearchPage(), // Settings
+    SearchPage(onTabChange: _changeTab), // Pass callback to SearchPage
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,95 +40,49 @@ class _HomePageViewState extends State<HomePageView> {
       ),
       bottomNavigationBar: CurvedNavigationBar(
         key: _bottomNavigationKey,
-        index: 0,
-        items: <Widget>[
-          Icon(
-            Icons.home,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
-          Icon(
-            Icons.cloud,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
-          Icon(
-            Icons.search,
-            size: 30,
-            color: Color(0xff48319D),
-          ),
+        index: _page,
+        items: const [
+          Icon(Icons.home, size: 30, color: Color(0xff48319D)),
+          Icon(Icons.cloud, size: 30, color: Color(0xff48319D)),
+          Icon(Icons.search, size: 30, color: Color(0xff48319D)),
         ],
         color: Colors.white,
         buttonBackgroundColor: Colors.white,
-        backgroundColor: Color(0xff48319D),
+        backgroundColor: const Color(0xff48319D),
         animationCurve: Curves.easeInOut,
-        animationDuration: Duration(milliseconds: 600),
+        animationDuration: const Duration(milliseconds: 600),
         onTap: (index) {
-          setState(() {
-            _page = index;
-          });
+          _changeTab(index);
         },
-        letIndexChange: (index) => true,
       ),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
   });
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  WeatherModel? weatherData;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/images/home_page_background.png"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Cairo",
-            style: TextStyle(
-              fontSize: 70,
-            ),
-          ),
-          Text(
-            "19°",
-            style: style50,
-          ),
-          Text(
-            "Mostly clear",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 20,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "H:24°",
-                style: style18,
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                "L:18°",
-                style: style18,
-              ),
-            ],
-          ),
-          Image.asset("assets/images/house.png"),
-        ],
-      ),
+    return BlocBuilder<WeatherCubit, WeatherState>(
+      builder: (context, state) {
+        if (state is weatherLoading) {
+          return Center(child: CircularProgressIndicator());
+        } else if (state is weatherSuccess) {
+          return SuccessBody(weatherData: state.weatherModel);
+        } else {
+          return DefaultBody();
+        }
+      },
     );
   }
 }
